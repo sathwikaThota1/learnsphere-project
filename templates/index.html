@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Learning Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 70%;
+            margin: 40px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+        }
+
+        textarea {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        input[type="text"] {
+            padding: 6px;
+            width: 60%;
+        }
+
+        hr {
+            margin: 25px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h2>AI Learning Assistant</h2>
+
+    <!-- STEP 1: Generate Concept -->
+    <form method="POST">
+        <input type="text" name="topic" placeholder="Enter Topic (e.g., Machine Learning)" required>
+        <button type="submit" name="action" value="generate">Generate Concept</button>
+    </form>
+
+    {% if concept %}
+    <hr>
+    <h3>Generated Concept:</h3>
+    <textarea readonly rows="10">{{ concept }}</textarea>
+
+    <!-- Actions -->
+    <form method="POST">
+        <input type="hidden" name="concept_text" value="{{ concept }}">
+
+        <button type="submit" name="action" value="summarize">Summarize</button>
+
+        <input type="text" name="language" placeholder="Translate to language">
+        <button type="submit" name="action" value="translate">Translate</button>
+
+        <button type="submit" name="action" value="quiz">Generate Quiz</button>
+    </form>
+    {% endif %}
+
+    {% if result %}
+    <hr>
+    <h3>Result:</h3>
+    <textarea readonly rows="8">{{ result }}</textarea>
+    {% endif %}
+
+    {% if quiz %}
+    <hr>
+    <h3>Quiz:</h3>
+
+    <form method="POST">
+        <input type="hidden" name="action" value="check_quiz">
+        <input type="hidden" name="concept_text" value="{{ concept }}">
+        <input type="hidden" name="quiz_data" value='{{ quiz | tojson }}'>
+
+        {% for q in quiz %}
+            {% set q_index = loop.index0 %}
+            <p><strong>{{ loop.index }}. {{ q.question }}</strong></p>
+
+            {% for option in q.options %}
+                <input type="radio"
+                       name="q{{ q_index }}"
+                       value="{{ loop.index0 }}"
+                       required>
+                {{ option }}<br>
+            {% endfor %}
+            <br>
+        {% endfor %}
+
+        <button type="submit">Submit Quiz</button>
+    </form>
+    {% endif %}
+
+    {% if score is not none %}
+    <hr>
+    <h3>Your Score: {{ score }}</h3>
+    {% endif %}
+
+</div>
+
+</body>
+</html>
