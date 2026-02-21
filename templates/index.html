@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Learning Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        textarea, input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+        }
+
+        button {
+            padding: 8px 15px;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+
+        .voice-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+
+        .speak-btn {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+        }
+
+        .section {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>AI Concept Generator with Voice Support</h2>
+
+<form method="POST">
+
+    <label>Enter Topic:</label>
+    <input type="text" name="topic" id="topicInput" placeholder="Enter topic here...">
+
+    <button type="button" class="voice-btn" onclick="startDictation()">🎤 Speak Topic</button>
+
+    <br>
+
+    <button type="submit" name="action" value="generate">Generate Concept</button>
+
+    <div class="section">
+        <label>Concept Text:</label>
+        <textarea name="concept_text" id="conceptText" rows="8">{{ concept }}</textarea>
+    </div>
+
+    <button type="submit" name="action" value="summarize">Summarize</button>
+
+    <select name="language">
+        <option value="">Select Language</option>
+        <option value="Hindi">Hindi</option>
+        <option value="Telugu">Telugu</option>
+        <option value="Tamil">Tamil</option>
+    </select>
+
+    <button type="submit" name="action" value="translate">Translate</button>
+
+    
+</form>
+
+{% if result %}
+<div class="section">
+    <h3>Result:</h3>
+    <p id="resultText">{{ result }}</p>
+    <button class="speak-btn" onclick="speakText('resultText')">🔊 Speak Result</button>
+</div>
+{% endif %}
+
+{% if concept %}
+<div class="section">
+    <h3>Generated Concept:</h3>
+    <p id="conceptDisplay">{{ concept }}</p>
+    <button class="speak-btn" onclick="speakText('conceptDisplay')">🔊 Speak Concept</button>
+</div>
+{% endif %}
+
+<script>
+
+/* ================================
+   TEXT TO SPEECH
+================================ */
+
+function speakText(elementId) {
+
+    let element = document.getElementById(elementId);
+
+    if (!element) {
+        alert("Element not found!");
+        return;
+    }
+
+    let text = element.innerText || element.value;
+
+    if (!text.trim()) {
+        alert("Nothing to speak!");
+        return;
+    }
+
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.lang = "en-US";
+    speech.rate = 1;
+    speech.pitch = 1;
+
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(speech);
+}
+
+
+/* ================================
+   SPEECH TO TEXT (FINAL SAFE VERSION)
+================================ */
+
+function startDictation() {
+
+    const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+        alert("Speech Recognition not supported in this browser. Use Chrome.");
+        return;
+    }
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.continuous = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = function () {
+        console.log("Voice recognition started...");
+    };
+
+    recognition.onresult = function (event) {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById("topicInput").value = transcript;
+    };
+
+    recognition.onerror = function (event) {
+        console.error("Recognition error:", event.error);
+
+        if (event.error === "not-allowed") {
+            alert("Microphone permission denied. Please allow microphone access.");
+        } else if (event.error === "no-speech") {
+            alert("No speech detected. Please try again.");
+        } else if (event.error === "audio-capture") {
+            alert("No microphone detected.");
+        } else {
+            alert("Recognition error: " + event.error);
+        }
+    };
+
+    recognition.onend = function () {
+        console.log("Voice recognition ended.");
+    };
+
+    recognition.start();
+}
+
+</script>
+
+</body>
+</html>
